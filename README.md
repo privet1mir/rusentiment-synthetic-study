@@ -43,3 +43,25 @@ Experiments currently use DeepPavlov/rubert-base-cased Fine-tuned for **3-class 
 - Perform statistical comparison of training runs
 - Add experiment configuration management
 - Extend evaluation with additional datasets
+
+
+## Current Experimental Results
+
+Initial baseline experiments were conducted to evaluate the effect of training data size and class balancing.
+
+All models were evaluated on the original **Rusentiment test set** using **macro F1-score**.
+
+| Experiment | Train Size | Accuracy | Macro F1 |
+|------------|-----------|----------|----------|
+| RuBERT Real 1k | 1k | 0.667 | 0.567 |
+| RuBERT Balanced Train | 3.2k | 0.739 | 0.673 |
+| RuBERT Real Full | 4.6k | 0.768 | 0.698 |
+
+### Observations
+
+- Model performance improves significantly with more training data.
+- Training on **1k samples** results in a large drop in macro F1.
+- Using **balanced training data** improves minority class performance but slightly reduces overall accuracy compared to the natural distribution.
+- The **best baseline** is achieved using the full real dataset with the original label distribution.
+
+These baselines establish the upper bound of performance using real labeled data and motivate the use of **synthetic data augmentation** in low-resource settings.

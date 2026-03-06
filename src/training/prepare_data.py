@@ -44,14 +44,9 @@ def prepare_rusentiment(sample_size=None, seed=42):
 
     print("Filtered distribution:\n", df["label"].value_counts(), "\n")
 
-    df = balanced_sample(df, seed=seed)
+    # df = balanced_sample(df, seed=seed)
 
     print("Balanced train/val distribution:\n", df["label"].value_counts(), "\n")
-
-    if sample_size:
-        df = df.sample(n=sample_size, random_state=seed).reset_index(drop=True)
-
-        print("Sampled distribution:\n", df["label"].value_counts(), "\n")
 
     df["label_numeric"] = df["label"].map(LABEL_MAP)
 
@@ -61,6 +56,9 @@ def prepare_rusentiment(sample_size=None, seed=42):
         random_state=seed,
         stratify=df["label"]
     )
+
+    if sample_size:
+        train_df = train_df.sample(n=sample_size, random_state=seed).reset_index(drop=True)
 
     print("Train size:", len(train_df))
     print("Train distribution:\n", train_df["label"].value_counts(), "\n")
@@ -76,7 +74,7 @@ def prepare_rusentiment(sample_size=None, seed=42):
 
     test_df = test_df[test_df["label"].isin(LABELS)].copy()
 
-    test_df = balanced_sample(test_df, seed=seed)
+    # test_df = balanced_sample(test_df, seed=seed)
 
     test_df["label_numeric"] = test_df["label"].map(LABEL_MAP)
 

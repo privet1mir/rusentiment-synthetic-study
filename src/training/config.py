@@ -28,10 +28,10 @@ class TrainerConfig(BaseModel):
     output_dir: Path = PROJECT_ROOT / "trained_models"
 
     learning_rate: float = 2e-5
-    num_train_epochs: int = 3
+    num_train_epochs: int = 20
 
-    per_device_train_batch_size: int = 64
-    per_device_eval_batch_size: int = 64
+    per_device_train_batch_size: int = 128
+    per_device_eval_batch_size: int = 128
 
     weight_decay: float = 0.01
 
@@ -50,7 +50,7 @@ class TrainerConfig(BaseModel):
 class ExperimentConfig(BaseModel):
 
     project_name: str = "rusentiment_synthetic_study"
-    experiment_name: str = "Rubert Baseline v2"
+    experiment_name: str = "RuBERT Baseline Natural Distribution 1k"
 
     trainer: TrainerConfig = TrainerConfig()
     data: DataConfig = DataConfig()
