@@ -4,6 +4,7 @@ import mlflow
 import torch
 from tqdm.auto import tqdm
 from transformers import AutoModelForSequenceClassification
+from transformers import get_linear_schedule_with_warmup
 from torch.utils.data import DataLoader
 from dataset import SyntheticSentimentDataset
 from transformers import AutoTokenizer
@@ -97,7 +98,16 @@ def train(cfg: ExperimentConfig) -> None:
 
         optimizer = torch.optim.AdamW(
             model.parameters(),
-            lr=cfg.trainer.learning_rate
+            lr=cfg.trainer.learning_rate,
+            weight_decay=cfg.trainer.weight_decay
+        )
+
+        num_training_steps = len(train_loader) * cfg.trainer.num_train_epochs
+
+        scheduler = get_linear_schedule_with_warmup(
+            optimizer,
+            num_warmup_steps=int(0.1 * num_training_steps),
+            num_training_steps=num_training_steps
         )
 
         train_losses, val_losses, val_accs, val_f1s  = [], [], [], []
@@ -128,7 +138,9 @@ def train(cfg: ExperimentConfig) -> None:
                 outputs = model(**batch)
                 loss = outputs.loss
                 loss.backward()
+                torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
                 optimizer.step()
+                scheduler.step()
                 total_loss += loss.item()
                 progress_bar.set_postfix({"loss": f"{loss.item():.4f}"})
 
@@ -232,7 +244,7 @@ def train(cfg: ExperimentConfig) -> None:
         mlflow.log_artifact(precision_path)
         mlflow.log_artifact(recall_path)
 
-        mlflow.log_artifact(best_model_path)
+        # mlflow.log_artifact(best_model_path)
         mlflow.log_artifact(os.path.join(log_dir, "train.log"))
 
         logger.info("Starting final test evaluation")
