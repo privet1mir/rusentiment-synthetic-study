@@ -65,3 +65,31 @@ All models were evaluated on the original **Rusentiment test set** using **macro
 - The **best baseline** is achieved using the full real dataset with the original label distribution.
 
 These baselines establish the upper bound of performance using real labeled data and motivate the use of **synthetic data augmentation** in low-resource settings.
+
+## Synthetic Generation
+
+### E1 — Raw LLM Generation
+
+Synthetic dataset generated using raw LLM prompting.
+
+**Pipeline**
+
+LLM generation → JSON parsing → rule-based filtering → diversity evaluation
+
+**Dataset**
+
+`data/generated/synthetic_raw_1_5k.csv`
+
+**Label distribution**
+
+Total - 1500 labels
+- neutral: 750  
+- positive: 375  
+- negative: 375  
+
+**Diversity metrics**
+
+- Distinct-1: 0.244  
+- Distinct-2: 0.649  
+- Self-BLEU: 0.112  
+- Embedding similarity: 0.554
