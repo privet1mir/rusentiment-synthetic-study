@@ -2,6 +2,8 @@ import json
 from pathlib import Path
 import pandas as pd
 from config import ExperimentConfig
+from prompts import FEW_SHOT_PROMPTS_MAPPER
+
 
 def compute_samples_per_label(cfg: ExperimentConfig):
 
@@ -55,3 +57,13 @@ def filter_sample(text: str, label: str):
     if "label" in text.lower():
         return False
     return True
+
+
+def build_examples(label):
+    examples = FEW_SHOT_PROMPTS_MAPPER[label]
+    formatted = []
+    for text in examples:
+        formatted.append(
+            f'{{"text": "{text}", "label": "{label}"}}'
+        )
+    return "\n".join(formatted)
