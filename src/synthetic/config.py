@@ -29,6 +29,7 @@ class ExperimentConfig(BaseModel):
 
     project_name: str = "rusentiment_synthetic_study"
     experiment_name: str = "Generate Synthetic Raw 1k"
+    prompt_type: str = "base"
 
     generator: GenerateConfig = GenerateConfig()
 

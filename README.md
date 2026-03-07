@@ -78,7 +78,7 @@ LLM generation → JSON parsing → rule-based filtering → diversity evaluatio
 
 **Dataset**
 
-`data/generated/synthetic_raw_1_5k.csv`
+`data_synthetic/synthetic_raw_1_5k.csv`
 
 **Label distribution**
 
@@ -93,3 +93,31 @@ Total - 1500 labels
 - Distinct-2: 0.649  
 - Self-BLEU: 0.112  
 - Embedding similarity: 0.554
+
+### E2 — Few-Shot LLM Generation
+
+Synthetic dataset generated using few-shot prompting with label-specific examples.
+
+For each label, **4 examples sampled from the real Rusentiment dataset** were provided in the prompt as guidance.
+
+**Pipeline**
+
+LLM generation (few-shot prompting) → JSON parsing → rule-based filtering → diversity evaluation
+
+**Dataset**
+
+`data_synthetic/synthetic_few_shot_1_5k.csv`
+
+**Label distribution**
+
+Total - 1500 labels
+- neutral: 750  
+- positive: 375  
+- negative: 375  
+
+**Diversity metrics**
+
+- Distinct-1: 0.233  
+- Distinct-2: 0.618  
+- Self-BLEU: 0.171  
+- Embedding similarity: 0.546

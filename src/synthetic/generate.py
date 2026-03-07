@@ -6,9 +6,9 @@ from dotenv import load_dotenv
 from openai import AsyncOpenAI
 from tqdm.asyncio import tqdm
 
-from utils import compute_samples_per_label, parse_output, save_dataset, filter_sample
+from utils import compute_samples_per_label, parse_output, save_dataset, filter_sample, build_examples
 from config import ExperimentConfig
-from prompts import RAW_SENTIMENT_PROMPT
+from prompts import RAW_SENTIMENT_PROMPT, FEW_SHOT_SENTIMENT_PROMPT
 from metrics import compute_diversity_metrics
 
 
@@ -26,9 +26,14 @@ logger = logging.getLogger(__name__)
 
 CONCURRENCY = 20
 
-async def generate_sample(model: str, label: str, semaphore: asyncio.Semaphore):
+async def generate_sample(model: str, label: str, semaphore: asyncio.Semaphore, prompt_type="base"):
 
-    prompt = RAW_SENTIMENT_PROMPT.format(label=label)
+    if prompt_type == "few_shot":
+        few_shot_examples = build_examples(label)
+        prompt = FEW_SHOT_SENTIMENT_PROMPT.format(label=label, examples=few_shot_examples)
+    
+    else:
+        prompt = RAW_SENTIMENT_PROMPT.format(label=label)
 
     async with semaphore:
 
@@ -54,7 +59,8 @@ async def generate_dataset(cfg: ExperimentConfig):
                 generate_sample(
                     cfg.generator.model,
                     label,
-                    semaphore
+                    semaphore,
+                    cfg.prompt_type
                 )
             )
 
@@ -87,17 +93,19 @@ async def generate_dataset(cfg: ExperimentConfig):
 async def main():
 
     cfg = ExperimentConfig.from_yaml(
-        "src/synthetic/configs/e1_raw.yaml"
+        "src/synthetic/configs/e2_few_shot.yaml"
     )
     logger.info(f"Experiment: {cfg.experiment_name}")
     dataset = await generate_dataset(cfg)
+
+    logger.info(f"Prompt type: {cfg.prompt_type}")
 
     texts = [x["text"] for x in dataset]
     metrics = compute_diversity_metrics(texts)
 
     logger.info(f"Diversity metrics: {metrics}")
 
-    output_path = cfg.generator.dataset_path / "synthetic_raw_1_5k.csv"
+    output_path = cfg.generator.dataset_path / f"synthetic_{cfg.prompt_type}_1_5k.csv"
     save_dataset(dataset, output_path)
     logger.info(f"Dataset saved → {output_path}")
 
