@@ -121,3 +121,39 @@ Total - 1500 labels
 - Distinct-2: 0.618  
 - Self-BLEU: 0.171  
 - Embedding similarity: 0.546
+
+### E3 — Taxonomy-Guided LLM Generation
+
+Synthetic dataset generated using **topic-conditioned prompting**.
+
+A topical taxonomy was first extracted from the real Rusentiment training dataset using an LLM.  
+During generation, each sample was conditioned on a **topic + sentiment label**, encouraging broader semantic coverage of the synthetic dataset.
+
+Example prompt conditioning:
+
+Topic: transportation  
+Label: negative
+
+This approach aims to increase diversity by explicitly guiding the model to generate texts from different topical domains.
+
+**Pipeline**
+
+Topic taxonomy extraction → Topic-conditioned LLM generation → JSON parsing → rule-based filtering → diversity evaluation
+
+**Dataset**
+
+`data_synthetic/synthetic_taxonomy_based_1_5k.csv`
+
+**Label distribution**
+
+Total - 1500 labels
+- neutral: 750  
+- positive: 375  
+- negative: 375  
+
+**Diversity metrics**
+
+- Distinct-1: 0.283  
+- Distinct-2: 0.704  
+- Self-BLEU: 0.099  
+- Embedding similarity: 0.508

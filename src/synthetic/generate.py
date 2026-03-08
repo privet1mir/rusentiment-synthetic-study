@@ -1,14 +1,15 @@
 import os
 import asyncio
 import logging
+import pandas as pd
 
 from dotenv import load_dotenv
 from openai import AsyncOpenAI
 from tqdm.asyncio import tqdm
 
-from utils import compute_samples_per_label, parse_output, save_dataset, filter_sample, build_examples
+from utils import compute_samples_per_label, parse_output, save_dataset, filter_sample, build_examples, choose_topic, load_topics
 from config import ExperimentConfig
-from prompts import RAW_SENTIMENT_PROMPT, FEW_SHOT_SENTIMENT_PROMPT
+from prompts import RAW_SENTIMENT_PROMPT, FEW_SHOT_SENTIMENT_PROMPT, TAXONOMY_SENTIMENT_PROMPT
 from metrics import compute_diversity_metrics
 
 
@@ -26,12 +27,18 @@ logger = logging.getLogger(__name__)
 
 CONCURRENCY = 20
 
-async def generate_sample(model: str, label: str, semaphore: asyncio.Semaphore, prompt_type="base"):
+async def generate_sample(model: str, label: str, semaphore: asyncio.Semaphore, prompt_type="base", topic=None):
 
     if prompt_type == "few_shot":
         few_shot_examples = build_examples(label)
         prompt = FEW_SHOT_SENTIMENT_PROMPT.format(label=label, examples=few_shot_examples)
-    
+
+    elif prompt_type == "taxonomy_based":
+        prompt = TAXONOMY_SENTIMENT_PROMPT.format(
+            label=label,
+            topic=topic
+        )
+
     else:
         prompt = RAW_SENTIMENT_PROMPT.format(label=label)
 
@@ -51,6 +58,11 @@ async def generate_dataset(cfg: ExperimentConfig):
     counts = compute_samples_per_label(cfg)
     semaphore = asyncio.Semaphore(CONCURRENCY)
     tasks = []
+
+    topics = None
+    if cfg.prompt_type == "taxonomy_based":
+        topics = load_topics(cfg.generator.topic_taxonomy_path)
+
     for label, n in counts.items():
         logger.info(f"Scheduling {n} samples for label='{label}'")
         for _ in range(n):
@@ -60,7 +72,8 @@ async def generate_dataset(cfg: ExperimentConfig):
                     cfg.generator.model,
                     label,
                     semaphore,
-                    cfg.prompt_type
+                    cfg.prompt_type,
+                    topic=choose_topic(topics)
                 )
             )
 
@@ -93,7 +106,7 @@ async def generate_dataset(cfg: ExperimentConfig):
 async def main():
 
     cfg = ExperimentConfig.from_yaml(
-        "src/synthetic/configs/e2_few_shot.yaml"
+        "src/synthetic/configs/e3_taxonomy_based.yaml"
     )
     logger.info(f"Experiment: {cfg.experiment_name}")
     dataset = await generate_dataset(cfg)
