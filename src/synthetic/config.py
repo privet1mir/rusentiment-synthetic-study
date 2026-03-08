@@ -9,6 +9,7 @@ from const import PROJECT_ROOT, LABELS, LABELS_DISTRIBUTION
 
 class GenerateConfig(BaseModel):
     dataset_path: Path = PROJECT_ROOT / "dataset"
+    topic_taxonomy_path: Optional[Path] = None
 
     train_file: Optional[Path] = None
     val_file: Optional[Path] = None

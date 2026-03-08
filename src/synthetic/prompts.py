@@ -80,3 +80,35 @@ Return strictly in JSON format:
   "label": "{label}"
 }}
 """
+
+TAXONOMY_SENTIMENT_PROMPT = """
+Generate a short Russian social media post (similar to a VKontakte message or comment)
+for a sentiment classification task.
+
+Target label: {label}
+Topic: {topic}
+
+Labels:
+negative — negative emotion, complaint, frustration, sadness
+neutral — factual statement, observation, or emotionally neutral message
+positive — happiness, excitement, affection, praise
+
+Topic description:
+The post should clearly relate to the topic "{topic}".
+
+Requirements:
+- The text should look like a real Russian social media post or comment.
+- Use informal language typical for Russian social networks.
+- Emojis may appear occasionally but should not appear in every example.
+- Slang, repeated punctuation (!!!, ...), lowercase style, and casual tone are allowed.
+- Length: 5–30 words.
+- The content should naturally relate to the topic "{topic}".
+- Avoid repeating templates.
+
+Return strictly in JSON format:
+
+{{
+  "text": "<russian social media post>",
+  "label": "{label}"
+}}
+"""

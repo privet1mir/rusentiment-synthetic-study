@@ -1,0 +1,19 @@
+project_name: rusentiment_synthetic_study
+experiment_name: generate_synthetic_taxonomy_based_1_5k
+prompt_type: taxonomy_based
+
+generator:
+  dataset_path: data_synthetic
+  topic_taxonomy_path: data/processed/topic_taxonomy.csv
+  num_samples: 1500
+  labels:
+    - negative
+    - neutral
+    - positive
+  labels_distribution:
+    neutral: 0.5
+    negative: 0.25
+    positive: 0.25
+  deduplication: false
+  provider: OpenAI
+  model: gpt-5-mini-2025-08-07

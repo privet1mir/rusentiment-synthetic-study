@@ -1,3 +1,4 @@
+import random
 import json
 from pathlib import Path
 import pandas as pd
@@ -67,3 +68,12 @@ def build_examples(label):
             f'{{"text": "{text}", "label": "{label}"}}'
         )
     return "\n".join(formatted)
+
+def choose_topic(topics):
+    return random.choice(topics) if topics else None
+
+def load_topics(topics_path):
+    topics_df = pd.read_csv(topics_path)
+    topics = topics_df["topic"].tolist()
+
+    return topics
