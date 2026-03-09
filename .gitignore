@@ -3,7 +3,7 @@ __pycache__
 logs
 mlartifacts
 mlflow.db
-venv
+.venv/
 .DS_Store
 .env
 some_stuff

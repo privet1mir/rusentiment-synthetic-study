@@ -252,5 +252,7 @@ def train(cfg: ExperimentConfig) -> None:
 
 
 if __name__ == "__main__":
-    cfg = ExperimentConfig()
+    cfg = ExperimentConfig.from_yaml(
+    PROJECT_ROOT / "src/training/configs/e4_real_5k_synthetic_1_5k.yaml"
+)
     train(cfg)

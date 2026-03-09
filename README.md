@@ -186,3 +186,20 @@ Total - 1500 labels
 - Self-BLEU: 0.099  
 - Embedding similarity: 0.508
 
+## Synthetic Training Experiments
+
+To evaluate the usefulness of synthetic datasets for downstream emotion classification,
+we trained RuBERT models using **only synthetic data** and evaluated them on the original
+Rusentiment **real test set**.
+
+### Synthetic Training Results
+
+| Experiment | Train Size | Accuracy | Macro F1 |
+|------------|-----------|----------|----------|
+| E1 Raw Synthetic | 1.5k | 0.400 | 0.399 |
+| E1.1 Raw Synthetic (scaled) | 3k | 0.367 | 0.373 |
+| E1.2 Raw Synthetic (scaled) | 5k | 0.383 | 0.383 |
+| E2 Few-Shot Synthetic | 1.5k | 0.385 | 0.383 |
+| E3 Taxonomy-Guided Synthetic | 1.5k | 0.363 | 0.371 |
+| E4 Real 1k + 1.5k Synthetic | 2.5k | 0.721 | 0.620 |
+| E5 Real 5k + 1.5k Synthetic | 6.1k | 0.758 | 0.704 | 
