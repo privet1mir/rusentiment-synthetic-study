@@ -1,0 +1,17 @@
+project_name: rusentiment_synthetic_study
+experiment_name: generate_synthetic_raw_5k
+
+generator:
+  dataset_path: data_synthetic
+  num_samples: 5000
+  labels:
+    - negative
+    - neutral
+    - positive
+  labels_distribution:
+    neutral: 0.5
+    negative: 0.25
+    positive: 0.25
+  deduplication: false
+  provider: OpenAI
+  model: gpt-5-mini-2025-08-07

@@ -94,6 +94,34 @@ Total - 1500 labels
 - Self-BLEU: 0.112  
 - Embedding similarity: 0.554
 
+### E1.1 — Raw LLM Generation (Scaling)
+
+To analyze how dataset size affects synthetic data diversity, raw LLM generation was scaled from **1.5k → 5k samples**.
+
+This experiment evaluates whether increasing the amount of synthetic data improves or degrades diversity.
+
+**Pipeline**
+
+LLM generation → JSON parsing → rule-based filtering → diversity evaluation
+
+**Dataset**
+
+`data_synthetic/synthetic_base_5k.csv`
+
+**Label distribution**
+
+Total - 5000 labels  
+- neutral: 2500  
+- positive: 1250  
+- negative: 1250  
+
+**Diversity metrics**
+
+- Distinct-1: 0.147  
+- Distinct-2: 0.505  
+- Self-BLEU: 0.123  
+- Embedding similarity: 0.557
+
 ### E2 — Few-Shot LLM Generation
 
 Synthetic dataset generated using few-shot prompting with label-specific examples.
@@ -157,3 +185,4 @@ Total - 1500 labels
 - Distinct-2: 0.704  
 - Self-BLEU: 0.099  
 - Embedding similarity: 0.508
+

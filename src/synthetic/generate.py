@@ -1,7 +1,6 @@
 import os
 import asyncio
 import logging
-import pandas as pd
 
 from dotenv import load_dotenv
 from openai import AsyncOpenAI
@@ -106,7 +105,7 @@ async def generate_dataset(cfg: ExperimentConfig):
 async def main():
 
     cfg = ExperimentConfig.from_yaml(
-        "src/synthetic/configs/e3_taxonomy_based.yaml"
+        "src/synthetic/configs/e1_1_raw.yaml"
     )
     logger.info(f"Experiment: {cfg.experiment_name}")
     dataset = await generate_dataset(cfg)
