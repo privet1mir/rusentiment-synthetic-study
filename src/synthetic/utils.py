@@ -77,3 +77,23 @@ def load_topics(topics_path):
     topics = topics_df["topic"].tolist()
 
     return topics
+
+def build_decoding_params(gen_cfg):
+    params = {}
+
+    if hasattr(gen_cfg, "temperature"):
+        params["temperature"] = gen_cfg.temperature
+
+    if hasattr(gen_cfg, "top_p"):
+        params["top_p"] = gen_cfg.top_p
+
+    if hasattr(gen_cfg, "frequency_penalty"):
+        params["frequency_penalty"] = gen_cfg.frequency_penalty
+
+    if hasattr(gen_cfg, "presence_penalty"):
+        params["presence_penalty"] = gen_cfg.presence_penalty
+
+    if gen_cfg.max_completion_tokens is not None:
+        params["max_completion_tokens"] = gen_cfg.max_completion_tokens
+
+    return params

@@ -22,9 +22,14 @@ class GenerateConfig(BaseModel):
     deduplication: bool = False
 
     provider: str = "OpenAI" 
-    model: str = "gpt-5-mini-2025-08-07"
+    model: str = "gpt-5.4-mini-2026-03-17"
 
+    temperature: Optional[float] = None
+    top_p: Optional[float] = None
+    frequency_penalty: Optional[float] = None
+    presence_penalty: Optional[float] = None
 
+    max_completion_tokens: Optional[int] = 100
 
 class ExperimentConfig(BaseModel):
 

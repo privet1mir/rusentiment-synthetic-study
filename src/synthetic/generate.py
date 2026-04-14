@@ -6,9 +6,11 @@ from dotenv import load_dotenv
 from openai import AsyncOpenAI
 from tqdm.asyncio import tqdm
 
-from utils import compute_samples_per_label, parse_output, save_dataset, filter_sample, build_examples, choose_topic, load_topics
+from typing import Any
+
+from utils import compute_samples_per_label, parse_output, save_dataset, filter_sample, build_examples, choose_topic, load_topics, build_decoding_params
 from config import ExperimentConfig
-from prompts import RAW_SENTIMENT_PROMPT, FEW_SHOT_SENTIMENT_PROMPT, TAXONOMY_SENTIMENT_PROMPT
+from prompts import RAW_SENTIMENT_PROMPT, FEW_SHOT_SENTIMENT_PROMPT, TAXONOMY_SENTIMENT_PROMPT, DIVERSE_SENTIMENT_PROMPT
 from metrics import compute_diversity_metrics
 
 
@@ -26,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 CONCURRENCY = 20
 
-async def generate_sample(model: str, label: str, semaphore: asyncio.Semaphore, prompt_type="base", topic=None):
+async def generate_sample(model: str, gen_cfg: Any, label: str, semaphore: asyncio.Semaphore, prompt_type="base", topic=None):
 
     if prompt_type == "few_shot":
         few_shot_examples = build_examples(label)
@@ -41,13 +43,18 @@ async def generate_sample(model: str, label: str, semaphore: asyncio.Semaphore, 
     else:
         prompt = RAW_SENTIMENT_PROMPT.format(label=label)
 
+    decoding_params = build_decoding_params(gen_cfg)
+
+    logger.info(f"Using decoding params: {decoding_params}")
+
     async with semaphore:
 
         response = await client.chat.completions.create(
             model=model,
             messages=[
                 {"role": "user", "content": prompt}
-            ]
+            ],
+            **decoding_params
         )
 
     return response.choices[0].message.content
@@ -59,6 +66,8 @@ async def generate_dataset(cfg: ExperimentConfig):
     tasks = []
 
     topics = None
+    gen_cfg = cfg.generator
+
     if cfg.prompt_type == "taxonomy_based":
         topics = load_topics(cfg.generator.topic_taxonomy_path)
 
@@ -69,10 +78,11 @@ async def generate_dataset(cfg: ExperimentConfig):
             tasks.append(
                 generate_sample(
                     cfg.generator.model,
+                    gen_cfg,
                     label,
                     semaphore,
                     cfg.prompt_type,
-                    topic=choose_topic(topics)
+                    topic=choose_topic(topics),
                 )
             )
 
@@ -83,7 +93,6 @@ async def generate_dataset(cfg: ExperimentConfig):
         try:
             output = await coro
             text, label = parse_output(output)
-
             if filter_sample(text, label):
                 results.append({
                     "text": text,
@@ -94,7 +103,7 @@ async def generate_dataset(cfg: ExperimentConfig):
 
         except Exception as e:
             parse_failed += 1
-            logger.warning("Failed generation")
+            logger.warning(f"Failed generation: {repr(e)}")
 
     logger.info(f"Generated samples: {len(results)}")
     logger.info(f"Failed parses: {parse_failed}")
@@ -103,9 +112,8 @@ async def generate_dataset(cfg: ExperimentConfig):
     return results
 
 async def main():
-
     cfg = ExperimentConfig.from_yaml(
-        "src/synthetic/configs/e1_1_raw.yaml"
+        "src/synthetic/configs/e4_raw_params.yaml"
     )
     logger.info(f"Experiment: {cfg.experiment_name}")
     dataset = await generate_dataset(cfg)
@@ -117,7 +125,7 @@ async def main():
 
     logger.info(f"Diversity metrics: {metrics}")
 
-    output_path = cfg.generator.dataset_path / f"synthetic_{cfg.prompt_type}_1_5k.csv"
+    output_path = cfg.generator.dataset_path / f"synthetic_{cfg.prompt_type}_50.csv"
     save_dataset(dataset, output_path)
     logger.info(f"Dataset saved → {output_path}")
 
