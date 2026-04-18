@@ -40,6 +40,11 @@ async def generate_sample(model: str, gen_cfg: Any, label: str, semaphore: async
             topic=topic
         )
 
+    elif prompt_type == "decoding_params":
+        prompt = DIVERSE_SENTIMENT_PROMPT.format(
+            label=label
+        )
+        
     else:
         prompt = RAW_SENTIMENT_PROMPT.format(label=label)
 
@@ -125,7 +130,7 @@ async def main():
 
     logger.info(f"Diversity metrics: {metrics}")
 
-    output_path = cfg.generator.dataset_path / f"synthetic_{cfg.prompt_type}_50.csv"
+    output_path = cfg.generator.dataset_path / f"synthetic_{cfg.prompt_type}_1_5k.csv"
     save_dataset(dataset, output_path)
     logger.info(f"Dataset saved → {output_path}")
 

@@ -112,3 +112,67 @@ Return strictly in JSON format:
   "label": "{label}"
 }}
 """
+
+DIVERSE_SENTIMENT_PROMPT = """
+Generate a Russian social media comment (VK style).
+
+Target label: {label}
+
+Write like a real person, not like an AI.
+
+---
+
+The comment MUST be varied and NOT repetitive.
+
+Avoid typical шаблоны:
+- "ну да", "ну норм", "ну и", "да норм", "да обычный"
+- generic safe phrases
+
+---
+
+The comment can be:
+- very short (1–3 words) OR long and messy
+- emotional OR neutral OR strange
+- logical OR chaotic OR random
+
+---
+
+Style:
+- informal, sloppy, imperfect
+- slang, profanity allowed
+- typos allowed
+- repetitions (бляяя, дааа)
+- broken punctuation (!!!???...)
+- unfinished thoughts are OK
+- weird or exaggerated tone is OK
+
+---
+
+Important:
+The text should feel spontaneous, like written quickly without thinking.
+
+Do NOT:
+- explain anything
+- write clean or well-structured sentences
+- produce safe generic text
+
+---
+
+Label meaning:
+negative — anger, hate, frustration, sadness
+neutral — everyday thoughts, weak emotion
+positive — joy, affection, excitement
+
+---
+
+Length: 1–50 words
+
+---
+
+Return strictly JSON:
+
+{{
+  "text": "<russian comment>",
+  "label": "{label}"
+}}
+"""
