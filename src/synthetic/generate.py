@@ -3,12 +3,12 @@ import asyncio
 import logging
 
 from dotenv import load_dotenv
-from openai import AsyncOpenAI
+from openai import AsyncOpenAI, RateLimitError
 from tqdm.asyncio import tqdm
 
 from typing import Any
 
-from utils import compute_samples_per_label, parse_output, save_dataset, filter_sample, build_examples, choose_topic, load_topics, build_decoding_params
+from utils import compute_samples_per_label, parse_output, save_dataset, filter_sample, build_examples, choose_topic, load_topics, build_decoding_params, prune_semantically_redundant_samples
 from config import ExperimentConfig
 from prompts import RAW_SENTIMENT_PROMPT, FEW_SHOT_SENTIMENT_PROMPT, TAXONOMY_SENTIMENT_PROMPT, DIVERSE_SENTIMENT_PROMPT
 from metrics import compute_diversity_metrics
@@ -27,6 +27,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 CONCURRENCY = 20
+
+MAX_RETRIES = 10
 
 async def generate_sample(model: str, gen_cfg: Any, label: str, semaphore: asyncio.Semaphore, prompt_type="base", topic=None):
 
@@ -50,20 +52,34 @@ async def generate_sample(model: str, gen_cfg: Any, label: str, semaphore: async
 
     decoding_params = build_decoding_params(gen_cfg)
 
-    logger.info(f"Using decoding params: {decoding_params}")
+    for attempt in range(MAX_RETRIES):
+        try:
+            async with semaphore:
+                response = await client.chat.completions.create(
+                    model=model,
+                    messages=[
+                        {"role": "user", "content": prompt}
+                    ],
+                    **decoding_params
+                )
 
-    async with semaphore:
+            return response.choices[0].message.content
+        
+        except RateLimitError:
+            sleep_time = min(
+                2 ** attempt,
+                30
+            )
+            logger.warning(
+                f"Rate limit hit. "
+                f"Retry {attempt + 1}/{MAX_RETRIES}. "
+                f"Sleeping {sleep_time}s"
+            )
+            await asyncio.sleep(sleep_time)
 
-        response = await client.chat.completions.create(
-            model=model,
-            messages=[
-                {"role": "user", "content": prompt}
-            ],
-            **decoding_params
-        )
-
-    return response.choices[0].message.content
-
+    raise RuntimeError(
+        f"Failed generation after {MAX_RETRIES} retries"
+    )
 
 async def generate_dataset(cfg: ExperimentConfig):
     counts = compute_samples_per_label(cfg)
@@ -72,6 +88,12 @@ async def generate_dataset(cfg: ExperimentConfig):
 
     topics = None
     gen_cfg = cfg.generator
+
+    if cfg.prompt_type == "decoding_params":
+        logger.info(
+            f"Using decoding params: "
+            f"{build_decoding_params(gen_cfg)}"
+        )
 
     if cfg.prompt_type == "taxonomy_based":
         topics = load_topics(cfg.generator.topic_taxonomy_path)
@@ -114,11 +136,19 @@ async def generate_dataset(cfg: ExperimentConfig):
     logger.info(f"Failed parses: {parse_failed}")
     logger.info(f"Failed filtered: {filtered_failed}")
 
+    if cfg.generator.semantic_pruning:
+        results = await prune_semantically_redundant_samples(
+            client=client,
+            results=results,
+            cfg=cfg,
+            logger=logger
+        )
+
     return results
 
 async def main():
     cfg = ExperimentConfig.from_yaml(
-        "src/synthetic/configs/e4_raw_params.yaml"
+        "src/synthetic/configs/e4_diverse_aware.yaml"
     )
     logger.info(f"Experiment: {cfg.experiment_name}")
     dataset = await generate_dataset(cfg)

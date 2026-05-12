@@ -186,6 +186,42 @@ Total - 1500 labels
 - Self-BLEU: 0.099  
 - Embedding similarity: 0.508
 
+### E4 — Diversity-Aware Synthetic Generation
+
+Synthetic dataset generated using diversity-oriented prompting, aggressive decoding parameters, and semantic redundancy pruning.
+
+Compared to previous experiments, the prompting strategy was modified to encourage:
+- informal and chaotic writing style
+- slang, typos, emojis, repetitions
+- variable text length
+- spontaneous and less templated responses
+
+Additionally, decoding parameters were adjusted to increase generation diversity:
+- temperature = 1.6
+- frequency_penalty = 1.2
+- presence_penalty = 1.0
+
+To further reduce repetitive samples, semantic redundancy pruning was applied:
+1. generate 1.25× more samples
+2. compute embeddings
+3. remove semantically redundant samples
+4. keep final balanced dataset of 1500 samples
+
+**Pipeline**
+
+LLM generation → JSON parsing → rule-based filtering → semantic redundancy pruning → diversity evaluation
+
+**Dataset**
+
+`data_synthetic/synthetic_decoding_params_1_5k.csv`
+
+**Diversity metrics**
+
+- Distinct-1: 0.276  
+- Distinct-2: 0.691  
+- Self-BLEU: 0.105  
+- Embedding similarity: 0.641
+
 ## Synthetic Training Experiments
 
 To evaluate the usefulness of synthetic datasets for downstream emotion classification,
