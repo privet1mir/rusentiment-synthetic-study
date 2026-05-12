@@ -19,7 +19,8 @@ class GenerateConfig(BaseModel):
     labels: list = LABELS
     labels_distribution: dict = LABELS_DISTRIBUTION
 
-    deduplication: bool = False
+    semantic_pruning: bool = False
+    semantic_pruning_oversampling: float = 1.25
 
     provider: str = "OpenAI" 
     model: str = "gpt-5.4-mini-2026-03-17"
