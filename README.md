@@ -228,7 +228,8 @@ To evaluate the usefulness of synthetic datasets for downstream emotion classifi
 we trained RuBERT models using **only synthetic data** and evaluated them on the original
 Rusentiment **real test set**.
 
-### Synthetic Training Results
+
+### Synthetic-Only Training Results
 
 | Experiment | Train Size | Accuracy | Macro F1 |
 |------------|-----------|----------|----------|
@@ -237,5 +238,11 @@ Rusentiment **real test set**.
 | E1.2 Raw Synthetic (scaled) | 5k | 0.383 | 0.383 |
 | E2 Few-Shot Synthetic | 1.5k | 0.385 | 0.383 |
 | E3 Taxonomy-Guided Synthetic | 1.5k | 0.363 | 0.371 |
-| E4 Real 1k + 1.5k Synthetic | 2.5k | 0.721 | 0.620 |
-| E5 Real 5k + 1.5k Synthetic | 6.1k | 0.758 | 0.704 | 
+| E4 Diversity-Aware Synthetic | 1.5k | 0.642 | 0.412 |
+
+### Mixed Real + Synthetic Training Results
+
+| Experiment | Train Size | Accuracy | Macro F1 |
+|------------|-----------|----------|----------|
+| E5 Real 1k + 1.5k Synthetic | 2.5k | 0.721 | 0.620 |
+| E6 Real 5k + 1.5k Synthetic | 6.1k | 0.758 | 0.704 |

@@ -31,7 +31,8 @@ def balanced_sample(df, label_col="label", seed=42):
 
 def prepare_rusentiment(sample_size=None, seed=42):
 
-    preselected_path = PROJECT_ROOT / "data/raw/rusentiment_preselected_posts.csv"
+    preselected_path = PROJECT_ROOT / "data_synthetic/synthetic_decoding_params_1_5k.csv"
+
     test_path = PROJECT_ROOT / "data/raw/rusentiment_test.csv"
 
     print("Loading train/val source:", preselected_path)
