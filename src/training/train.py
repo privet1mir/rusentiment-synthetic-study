@@ -2,6 +2,8 @@ import logging
 import os
 import mlflow
 import torch
+import random
+import numpy as np
 from tqdm.auto import tqdm
 from transformers import AutoModelForSequenceClassification
 from transformers import get_linear_schedule_with_warmup
@@ -36,6 +38,17 @@ def setup_logging(experiment_name):
     return log_dir
 
 
+def set_seed(seed=42):
+
+    random.seed(seed)
+    np.random.seed(seed)
+
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -48,6 +61,8 @@ def load_mlflow(experiment_name = "Deep Learning Experiment TEST 2"):
 
 
 def train(cfg: ExperimentConfig) -> None:
+
+    set_seed(42)
 
     log_dir = setup_logging(cfg.experiment_name)
     logger = logging.getLogger(__name__)
