@@ -9,41 +9,103 @@ The goal is to analyze whether synthetic samples can improve model performance w
 
 The project implements a reproducible PyTorch training pipeline with experiment tracking and evaluation.
 
-## Training Pipeline
+## Project Structure
+
+The project consists of two main pipelines:
+
+### 1. Synthetic Data Generation (src/synthetic)
+
+Implements multiple LLM-based synthetic data generation strategies for Russian social media texts.
 
 The pipeline includes:
+- prompt-based generation
+- few-shot prompting
+- taxonomy-guided generation
+- latent configuration sampling
+- semantic redundancy pruning
+- diversity evaluation
 
-- HuggingFace Transformers model
-- PyTorch training loop
+Generated datasets are automatically saved as CSV files for downstream training experiments.
+
+### 2. Training Pipeline (src/training)
+
+Implements a reproducible PyTorch training pipeline for emotion classification.
+
+The pipeline includes:
+- HuggingFace Transformers models
+- training and validation loops
 - early stopping
-- validation evaluation
-- per-class metrics
-- experiment tracking with **MLflow**
+- metric computation
+- experiment tracking with MLflow
 - automatic artifact logging
 
-Artifacts produced during training:
+Artifacts produced during training include:
 
-metrics.csv  
-test_metrics.csv  
-training_curves.png  
-confusion_matrix.png  
-precision_per_class.png  
-recall_per_class.png  
-f1_per_class.png  
+- metrics.csv
+- test_metrics.csv
+- confusion_matrix.png
+- training_curves.png
+- per-class precision / recall / F1 plots
 
-## Model
+## Setup
 
-Experiments currently use DeepPavlov/rubert-base-cased Fine-tuned for **3-class emotion classification**.
+### Environment Setup
 
-## Next Steps
+```bash
+python3 -m venv .venv
+```
 
-- Implement synthetic data generation pipelines (LLM prompting strategies)
-- Compare different synthetic dataset construction methods
-- Evaluate impact on downstream classification performance
-- Perform statistical comparison of training runs
-- Add experiment configuration management
-- Extend evaluation with additional datasets
+```bash
+source .venv/bin/activate
+```
 
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+## Training Pipeline Setup
+
+Before training, configure the experiment settings in:
+
+```bash
+src/training/configs/
+```
+
+Start MLflow tracking server:
+
+```bash
+mlflow server --port 5050
+```
+
+Run training:
+
+```bash
+python src/training/train.py
+```
+
+---
+
+## Synthetic Generation Setup
+
+Synthetic generation requires an OpenAI API key:
+
+```bash
+export OPENAI_API_KEY=your_api_key
+```
+
+Before generation, configure the experiment settings in:
+
+```bash
+src/synthetic/configs/
+```
+
+Run synthetic data generation:
+
+```bash
+python src/synthetic/generate.py
+```
 
 ## Current Experimental Results
 
@@ -66,161 +128,47 @@ All models were evaluated on the original **Rusentiment test set** using **macro
 
 These baselines establish the upper bound of performance using real labeled data and motivate the use of **synthetic data augmentation** in low-resource settings.
 
-## Synthetic Generation
+## Synthetic Generation Experiments
 
-### E1 — Raw LLM Generation
+Several synthetic data generation strategies were explored to study how prompting and diversity control affect downstream sentiment classification performance.
 
-Synthetic dataset generated using raw LLM prompting.
+### E1 — Raw Synthetic Generation
 
-**Pipeline**
+Baseline synthetic generation using direct sentiment prompting without additional conditioning.
 
-LLM generation → JSON parsing → rule-based filtering → diversity evaluation
+### E2 — Few-Shot Synthetic Generation
 
-**Dataset**
+Few-shot prompting using label-specific examples sampled from the real dataset.
 
-`data_synthetic/synthetic_raw_1_5k.csv`
+### E3 — Taxonomy-Guided Generation
 
-**Label distribution**
+Synthetic generation conditioned on semantic topics extracted from the real dataset.
 
-Total - 1500 labels
-- neutral: 750  
-- positive: 375  
-- negative: 375  
+### E4 — Diversity-Aware Generation
 
-**Diversity metrics**
+Synthetic generation with diversity-oriented prompting, aggressive decoding parameters, and semantic redundancy pruning.
 
-- Distinct-1: 0.244  
-- Distinct-2: 0.649  
-- Self-BLEU: 0.112  
-- Embedding similarity: 0.554
+### E5 — Latent Taxonomy Generation
 
-### E1.1 — Raw LLM Generation (Scaling)
+Structured synthetic generation using latent semantic and stylistic attributes such as:
+- topic
+- intent
+- emotion
+- writing style
+- structure
+- surface realism features
 
-To analyze how dataset size affects synthetic data diversity, raw LLM generation was scaled from **1.5k → 5k samples**.
+The pipeline also includes semantic redundancy pruning.
 
-This experiment evaluates whether increasing the amount of synthetic data improves or degrades diversity.
+---
 
-**Pipeline**
-
-LLM generation → JSON parsing → rule-based filtering → diversity evaluation
-
-**Dataset**
-
-`data_synthetic/synthetic_base_5k.csv`
-
-**Label distribution**
-
-Total - 5000 labels  
-- neutral: 2500  
-- positive: 1250  
-- negative: 1250  
-
-**Diversity metrics**
-
-- Distinct-1: 0.147  
-- Distinct-2: 0.505  
-- Self-BLEU: 0.123  
-- Embedding similarity: 0.557
-
-### E2 — Few-Shot LLM Generation
-
-Synthetic dataset generated using few-shot prompting with label-specific examples.
-
-For each label, **4 examples sampled from the real Rusentiment dataset** were provided in the prompt as guidance.
-
-**Pipeline**
-
-LLM generation (few-shot prompting) → JSON parsing → rule-based filtering → diversity evaluation
-
-**Dataset**
-
-`data_synthetic/synthetic_few_shot_1_5k.csv`
-
-**Label distribution**
-
-Total - 1500 labels
-- neutral: 750  
-- positive: 375  
-- negative: 375  
-
-**Diversity metrics**
-
-- Distinct-1: 0.233  
-- Distinct-2: 0.618  
-- Self-BLEU: 0.171  
-- Embedding similarity: 0.546
-
-### E3 — Taxonomy-Guided LLM Generation
-
-Synthetic dataset generated using **topic-conditioned prompting**.
-
-A topical taxonomy was first extracted from the real Rusentiment training dataset using an LLM.  
-During generation, each sample was conditioned on a **topic + sentiment label**, encouraging broader semantic coverage of the synthetic dataset.
-
-Example prompt conditioning:
-
-Topic: transportation  
-Label: negative
-
-This approach aims to increase diversity by explicitly guiding the model to generate texts from different topical domains.
-
-**Pipeline**
-
-Topic taxonomy extraction → Topic-conditioned LLM generation → JSON parsing → rule-based filtering → diversity evaluation
-
-**Dataset**
-
-`data_synthetic/synthetic_taxonomy_based_1_5k.csv`
-
-**Label distribution**
-
-Total - 1500 labels
-- neutral: 750  
-- positive: 375  
-- negative: 375  
-
-**Diversity metrics**
-
-- Distinct-1: 0.283  
-- Distinct-2: 0.704  
-- Self-BLEU: 0.099  
-- Embedding similarity: 0.508
-
-### E4 — Diversity-Aware Synthetic Generation
-
-Synthetic dataset generated using diversity-oriented prompting, aggressive decoding parameters, and semantic redundancy pruning.
-
-Compared to previous experiments, the prompting strategy was modified to encourage:
-- informal and chaotic writing style
-- slang, typos, emojis, repetitions
-- variable text length
-- spontaneous and less templated responses
-
-Additionally, decoding parameters were adjusted to increase generation diversity:
-- temperature = 1.6
-- frequency_penalty = 1.2
-- presence_penalty = 1.0
-
-To further reduce repetitive samples, semantic redundancy pruning was applied:
-1. generate 1.25× more samples
-2. compute embeddings
-3. remove semantically redundant samples
-4. keep final balanced dataset of 1500 samples
-
-**Pipeline**
-
-LLM generation → JSON parsing → rule-based filtering → semantic redundancy pruning → diversity evaluation
-
-**Dataset**
-
-`data_synthetic/synthetic_decoding_params_1_5k.csv`
-
-**Diversity metrics**
-
-- Distinct-1: 0.276  
-- Distinct-2: 0.691  
-- Self-BLEU: 0.105  
-- Embedding similarity: 0.641
+| Experiment | Pipeline | Dataset | Distinct-1 | Distinct-2 | Self-BLEU | Embedding Similarity |
+|---|---|---|---|---|---|---|
+| E1 | LLM generation → parsing → filtering | `synthetic_raw_1_5k.csv` | 0.244 | 0.649 | 0.112 | 0.554 |
+| E2 | Few-shot prompting → parsing → filtering | `synthetic_few_shot_1_5k.csv` | 0.233 | 0.618 | 0.171 | 0.546 |
+| E3 | Topic-conditioned prompting → parsing → filtering | `synthetic_taxonomy_based_1_5k.csv` | 0.283 | 0.704 | 0.099 | 0.508 |
+| E4 | Diversity prompting → filtering → semantic pruning | `synthetic_decoding_params_1_5k.csv` | 0.276 | 0.691 | 0.105 | 0.641 |
+| E5 | Latent-conditioned prompting → filtering → semantic pruning | `synthetic_latent_config_1_5k.csv` | 0.287 | 0.772 | 0.050 | 0.656 |
 
 ## Synthetic Training Experiments
 
