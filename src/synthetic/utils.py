@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 from config import ExperimentConfig
 from prompts import FEW_SHOT_PROMPTS_MAPPER
+from generation_config import GENERATION_CONFIG
 
 
 def compute_samples_per_label(cfg: ExperimentConfig):
@@ -326,3 +327,138 @@ async def prune_semantically_redundant_samples(
     )
 
     return dedup_results
+
+
+def sample_generation_config(label):
+
+    TOPIC_WEIGHTS = {
+        "relationships": 0.20,
+        "short_reaction": 0.17,
+        "daily_life": 0.15,
+
+        "toxicity": 0.09,
+        "philosophical": 0.08,
+        "humor": 0.08,
+
+        "discussion": 0.06,
+        "creative": 0.05,
+        "question": 0.03,
+
+        "storytelling": 0.01,
+        "other": 0.07,
+        "music": 0.01
+    }
+
+    topic = random.choices(
+        population=list(TOPIC_WEIGHTS.keys()),
+        weights=list(TOPIC_WEIGHTS.values()),
+        k=1
+    )[0]
+
+    intent = random.choice(
+        GENERATION_CONFIG["topic_to_intents"].get(
+            topic,
+            GENERATION_CONFIG["intent"]
+        )
+    )
+
+    topic_emotions = GENERATION_CONFIG[
+        "topic_to_emotions"
+    ].get(
+        topic,
+        GENERATION_CONFIG["emotion"]
+    )
+
+    if label == "positive":
+
+        allowed_emotions = [
+            "positive",
+            "hopeful",
+            "nostalgic",
+            "mixed"
+        ]
+
+    elif label == "negative":
+
+        allowed_emotions = [
+            "negative",
+            "aggressive",
+            "melancholic",
+            "dramatic",
+            "mixed"
+        ]
+
+    else:
+
+        allowed_emotions = [
+            "neutral",
+            "mixed",
+            "nostalgic"
+        ]
+
+    emotion_candidates = [
+        x for x in topic_emotions
+        if x in allowed_emotions
+    ]
+
+    if not emotion_candidates:
+        emotion_candidates = allowed_emotions
+
+    emotion = random.choice(
+        emotion_candidates
+    )
+
+    style = random.choice(
+        GENERATION_CONFIG["topic_to_styles"].get(
+            topic,
+            GENERATION_CONFIG["style"]
+        )
+    )
+
+    structure = random.choice(
+        GENERATION_CONFIG["topic_to_structure"].get(
+            topic,
+            GENERATION_CONFIG["structure"]
+        )
+    )
+
+    archetype = random.choice(
+        GENERATION_CONFIG["vk_archetypes"]
+    )
+
+    surface = {
+        "capslock": random.choices(
+            ["none", "light", "heavy"],
+            weights=[0.92, 0.05, 0.03]
+        )[0],
+
+        "emoji_usage": random.choices(
+            ["none", "light", "heavy"],
+            weights=[0.87, 0.12, 0.01]
+        )[0],
+
+        "typos": random.choices(
+            ["clean", "light_typos", "heavy_typos"],
+            weights=[0.73, 0.25, 0.02]
+        )[0],
+
+        "profanity": random.choices(
+            ["none", "light", "heavy"],
+            weights=[0.84, 0.10, 0.06]
+        )[0],
+
+        "punctuation": random.choices(
+            ["normal", "repeated_exclamations", "ellipsis_heavy", "chaotic"],
+            weights=[0.66, 0.10, 0.22, 0.02]
+        )[0]
+    }
+
+    return {
+        "topic": topic,
+        "intent": intent,
+        "emotion": emotion,
+        "style": style,
+        "structure": structure,
+        "archetype": archetype,
+        "surface": surface
+    }

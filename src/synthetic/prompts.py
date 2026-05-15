@@ -176,3 +176,44 @@ Return strictly JSON:
   "label": "{label}"
 }}
 """
+
+LATENT_CONFIG_PROMPT = """
+Generate a realistic Russian VK-style social media post.
+
+Target sentiment label: {label}
+
+Latent generation configuration:
+
+Topic: {topic}
+Intent: {intent}
+Emotion: {emotion}
+Style: {style}
+Structure: {structure}
+VK archetype: {archetype}
+
+Surface realism:
+- capslock: {capslock}
+- emoji usage: {emoji_usage}
+- typos: {typos}
+- profanity: {profanity}
+- punctuation: {punctuation}
+
+Requirements:
+- Write like a real person from old VK/social media.
+- The text should feel spontaneous and authentic.
+- Avoid generic AI phrasing.
+- The text may be messy, emotional, weird or fragmented.
+- Do not explain the configuration.
+- Do not make the text overly coherent.
+- Avoid repetition of common templates.
+
+Length:
+1–50 words.
+
+Return strictly JSON:
+
+{{
+  "text": "<russian vk-style text>",
+  "label": "{label}"
+}}
+"""
