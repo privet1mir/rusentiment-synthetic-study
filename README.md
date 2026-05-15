@@ -231,18 +231,19 @@ Rusentiment **real test set**.
 
 ### Synthetic-Only Training Results
 
-| Experiment | Train Size | Accuracy | Macro F1 |
-|------------|-----------|----------|----------|
-| E1 Raw Synthetic | 1.5k | 0.400 | 0.399 |
-| E1.1 Raw Synthetic (scaled) | 3k | 0.367 | 0.373 |
-| E1.2 Raw Synthetic (scaled) | 5k | 0.383 | 0.383 |
-| E2 Few-Shot Synthetic | 1.5k | 0.385 | 0.383 |
-| E3 Taxonomy-Guided Synthetic | 1.5k | 0.363 | 0.371 |
-| E4 Diversity-Aware Synthetic | 1.5k | 0.642 | 0.412 |
+| Experiment | Description | Train Size | Accuracy | Macro F1 |
+|------------|-------------|------------|-----------|-----------|
+| E1 | Raw Synthetic | 1.5k | 0.400 | 0.399 |
+| E2 | Few-Shot Synthetic | 1.5k | 0.385 | 0.383 |
+| E3 | Taxonomy-Guided Synthetic | 1.5k | 0.363 | 0.371 |
+| E4 | Diversity-Aware Synthetic | 1.5k | 0.642 | 0.412 |
+| E5 | Latent Taxonomy Synthetic | 1.5k | 0.555 | 0.495 |
+| E5.1 | Latent Taxonomy Synthetic (scaled) | 2.5k | 0.598 | 0.521 |
+| E5.2 | Latent Taxonomy Synthetic (scaled) | 5k | 0.635 | 0.540 |
 
 ### Mixed Real + Synthetic Training Results
 
-| Experiment | Train Size | Accuracy | Macro F1 |
-|------------|-----------|----------|----------|
-| E5 Real 1k + 1.5k Synthetic | 2.5k | 0.721 | 0.620 |
-| E6 Real 5k + 1.5k Synthetic | 6.1k | 0.758 | 0.704 |
+| Experiment | Description | Train Size | Accuracy | Macro F1 |
+|------------|-------------|------------|-----------|-----------|
+| E6.1 Mixed | Real 1k + 1.5k Latent Synthetic | 2.5k | 0.673 | 0.584 |
+| E6.2 Mixed | Real 5k + 1.5k Latent Synthetic | 6.3k | 0.752 | 0.682 |
